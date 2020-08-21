@@ -13,6 +13,9 @@ pip install git+git://github.com/jetbrains-infra/pulumi-aws-acm@<tag or branch>
 ```python
 import pulumi
 from pulumi_aws_acm import Certificate, CertificateArgs
+from pulumi_aws import Provider
+
+cert_provider = Provider('cert-provider', region='us-east-1')
 
 args = CertificateArgs(
     issue='sre-123',
@@ -22,7 +25,7 @@ args = CertificateArgs(
         'zone_id-2': ['example.org', 'www.example.org'],
     })
 
-certificate = Certificate('test', args)
+certificate = Certificate('test', args, opts=pulumi.ResourceOptions(provider=cert_provider))
 pulumi.export('certificate-arn', certificate.certificate_validation.certificate_arn)
 ```
 
