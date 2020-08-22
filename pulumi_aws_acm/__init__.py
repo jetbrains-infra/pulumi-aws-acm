@@ -5,24 +5,6 @@ from pulumi_aws import acm as aws_acm
 from pulumi_aws import route53
 
 
-class CertificateArgs:
-    def __init__(self,
-                 issue: str,
-                 stack: str,
-                 zones: Dict[str, List[str]]):
-        """
-        Constructs a CertificateArgs
-        
-        :param issue: Issue tracker issue ID
-        :param stack: Stack name, for example dev, staging or prod
-        :param zones: Map of zone_id: to domains names, for example {'12345ABCDE': ['example.com', 'www.example.com']}
-            zone_id will use to create DNS validation records for certs for exact domain names
-        """
-        self.issue = issue
-        self.stack = stack
-        self.zones = zones
-
-
 class Certificate(pulumi.ComponentResource):
     certificate_validation: aws_acm.CertificateValidation
     name: str
@@ -35,20 +17,25 @@ class Certificate(pulumi.ComponentResource):
 
     def __init__(self,
                  name: str,
-                 args: CertificateArgs,
+                 issue: str,
+                 stack: str,
+                 zones: Dict[str, List[str]],
                  opts: pulumi.ResourceOptions = None):
         """
         Constructs a Certificate
 
         :param name: Will be used for objects naming, like ACM Certificate object and technical names
-        :param args: CertificateArgs, all configuration for create certificate and wait for creation
+        :param issue: Issue tracker issue ID
+        :param stack: Stack name, for example dev, staging or prod
+        :param zones: Map of zone_id: to domains names, for example {'12345ABCDE': ['example.com', 'www.example.com']}
+            zone_id will use to create DNS validation records for certs for exact domain names
         :param opts: Standard pulumi ResourceOptions
         """
         super().__init__('AWSCertificate', name, None, opts)
-        self.name = f'acm-{name}-{args.stack}'
-        self.issue = args.issue
-        self.stack = args.stack
-        self.zones = args.zones
+        self.name = f'acm-{name}-{stack}'
+        self.issue = issue
+        self.stack = stack
+        self.zones = zones
         self.SANs = []
         self.tags = {'acm': self.name,
                      'stack': self.stack,

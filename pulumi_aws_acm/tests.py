@@ -1,9 +1,7 @@
+import pulumi
 import unittest
 from typing import Optional, Tuple, List
-
-import pulumi
-
-from acm import CertificateArgs, Certificate
+from pulumi_aws_acm import Certificate
 
 
 class MyMocks(pulumi.runtime.Mocks):
@@ -39,17 +37,12 @@ class MyMocks(pulumi.runtime.Mocks):
 
 pulumi.runtime.set_mocks(MyMocks())
 
-# Create infrea
-
-ca = CertificateArgs(
-    issue='sre-123',
-    stack='staging',
-    zones={
-        'id-1': ['test.jetbrains.com', 'test1.jetbrains.com'],
-        'id-2': ['test.jetbrains.org', 'test1.jetbrains.org'],
-    })
-
-certificate = Certificate('test', ca)
+certificate = Certificate('test', issue='sre-123',
+                          stack='staging',
+                          zones={
+                              'id-1': ['test.jetbrains.com', 'test1.jetbrains.com'],
+                              'id-2': ['test.jetbrains.org', 'test1.jetbrains.org'],
+                          })
 
 
 class TestingWithMocks(unittest.TestCase):
@@ -61,7 +54,7 @@ class TestingWithMocks(unittest.TestCase):
             self.assertEqual(c.tags.get('stack'), 'staging')
             self.assertEqual(c.tags.get('issue'), 'sre-123')
 
-        return pulumi.Output.all(certificate, ca).apply(check_tags)
+        return pulumi.Output.all(certificate).apply(check_tags)
 
     def test_check_SANs(self):
         def check_SANs(args: List[Certificate]):
@@ -73,7 +66,7 @@ class TestingWithMocks(unittest.TestCase):
                 'test1.jetbrains.org'
             ])
 
-        return pulumi.Output.all(certificate, ca).apply(check_SANs)
+        return pulumi.Output.all(certificate).apply(check_SANs)
 
     def test_check_get_zone_by_id(self):
         def check_get_zone_by_id(args: List[Certificate]):
@@ -82,5 +75,5 @@ class TestingWithMocks(unittest.TestCase):
             self.assertEqual(c._get_zone_id_by_domain('test1.jetbrains.com'), 'id-1')
             self.assertEqual(c._get_zone_id_by_domain('test.jetbrains.org'), 'id-2')
             self.assertEqual(c._get_zone_id_by_domain('test1.jetbrains.org'), 'id-2')
-           
-            return pulumi.Output.all(certificate, ca).apply(check_get_zone_by_id)
+
+            return pulumi.Output.all(certificate).apply(check_get_zone_by_id)
