@@ -64,11 +64,11 @@ class Certificate(pulumi.ComponentResource):
         i = 0
         for dvo in domain_validation_options:
             cert_validation = route53.Record(f'{self.name}-record-{i}',
-                                             name=dvo['resourceRecordName'],
-                                             records=[dvo['resourceRecordValue']],
+                                             name=dvo.resource_record_name,
+                                             records=[dvo.resource_record_value],
                                              ttl=300,
-                                             type=dvo['resourceRecordType'],
-                                             zone_id=self._get_zone_id_by_domain(dvo['domain_name']),
+                                             type=dvo.resource_record_type,
+                                             zone_id=self._get_zone_id_by_domain(dvo.domain_name),
                                              opts=pulumi.ResourceOptions(parent=self, delete_before_replace=True))
             i += 1
             validation_record_fqdns.append(cert_validation.fqdn)
